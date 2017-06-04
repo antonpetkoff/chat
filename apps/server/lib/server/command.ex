@@ -59,4 +59,16 @@ defmodule Server.Command do
   defp do_parse(_, _) do
     {:error, :unknown_command}
   end
+
+  @doc ~S"""
+  Executes the given `command`.
+
+  ## Examples
+
+    iex> Server.Command.run {:ok, {:register, "dummy_user"}}
+    {:ok, "OK\r\n"}
+  """
+  def run(_) do
+    {:ok, "OK\r\n"}
+  end
 end
