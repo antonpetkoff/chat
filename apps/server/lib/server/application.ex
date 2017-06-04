@@ -1,21 +1,17 @@
 defmodule Server.Application do
-  # See http://elixir-lang.org/docs/stable/elixir/Application.html
-  # for more information on OTP Applications
-  @moduledoc false
-
   use Application
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    # Define workers and child supervisors to be supervised
+    # port = System.get_env("PORT") || raise "missing $PORT environment variable"
+    port = 4040
+
     children = [
-      # Starts a worker by calling: Server.Worker.start_link(arg1, arg2, arg3)
-      # worker(Server.Worker, [arg1, arg2, arg3]),
+      worker(Task, [Server, :accept, [port]]),
+      supervisor(Task.Supervisor, [[name: Server.TaskSupervisor]])
     ]
 
-    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Server.Supervisor]
     Supervisor.start_link(children, opts)
   end
