@@ -18,6 +18,9 @@ defmodule Server.Command do
 
     iex> Server.Command.parse "send_file_to dummy_user file_name 128\r\n"
     {:ok, {:send_file, "dummy_user", "file_name", 128}}
+
+    iex> Server.Command.parse "buy_flowers dummy_user\r\n"
+    {:error, :unknown_command}
   """
   def parse(line) do
     [directive | body] = line
@@ -53,4 +56,7 @@ defmodule Server.Command do
     {:ok, {:send_file, user_name, file_name, packages_count}}
   end
 
+  defp do_parse(_, _) do
+    {:error, :unknown_command}
+  end
 end
