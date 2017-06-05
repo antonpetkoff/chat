@@ -23,13 +23,9 @@ defmodule Server do
   end
 
   defp serve(socket) do
-    response = case read_line socket do
-      {:ok, data} -> case Request.parse data do
-        {:ok, request} -> Request.serve request
-        {:error, _} = error -> error
-      end
-      {:error, _} = error -> error
-    end
+    response = with {:ok, data} <- read_line(socket),
+                    {:ok, request} <- Request.parse(data),
+                    do: Request.serve request
 
     write_line(socket, response)
     serve socket
