@@ -1,6 +1,6 @@
 defmodule Server do
   require Logger
-  alias Server.Command
+  alias Server.Request
 
   def accept(port) do
     options = [:binary, packet: :line, active: false, reuseaddr: true]
@@ -12,6 +12,8 @@ defmodule Server do
   defp loop_acceptor(socket) do
     {:ok, client} = :gen_tcp.accept socket
 
+    Logger.info "Accepted request"
+
     {:ok, pid} = Task.Supervisor.start_child(Server.TaskSupervisor, fn ->
       serve client
     end)
@@ -22,8 +24,8 @@ defmodule Server do
 
   defp serve(socket) do
     response = case read_line socket do
-      {:ok, data} -> case Command.parse data do
-        {:ok, command} -> Command.run command
+      {:ok, data} -> case Request.parse data do
+        {:ok, request} -> Request.serve request
         {:error, _} = error -> error
       end
       {:error, _} = error -> error
@@ -41,8 +43,8 @@ defmodule Server do
     :gen_tcp.send(socket, message)
   end
 
-  defp write_line(socket, {:error, :unknown_command}) do
-    :gen_tcp.send(socket, "UNKNOWN COMMAND\r\n")
+  defp write_line(socket, {:error, :unknown_request}) do
+    :gen_tcp.send(socket, "UNKNOWN REQUEST\r\n")
   end
 
   defp write_line(_socket, {:error, :closed}) do

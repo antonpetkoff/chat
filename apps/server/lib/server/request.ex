@@ -1,25 +1,25 @@
-defmodule Server.Command do
+defmodule Server.Request do
   @doc ~S"""
-  Parses the given `line` into a command.
+  Parses the given `line` into a request.
 
   ## Examples
 
-    iex> Server.Command.parse "user dummy_user\r\n"
+    iex> Server.Request.parse "user dummy_user\r\n"
     {:ok, {:register, "dummy_user"}}
 
-    iex> Server.Command.parse "send_to dummy_user single line message\r\n"
+    iex> Server.Request.parse "send_to dummy_user single line message\r\n"
     {:ok, {:send_message, "dummy_user", "single line message"}}
 
-    iex> Server.Command.parse "send_all single line message\r\n"
+    iex> Server.Request.parse "send_all single line message\r\n"
     {:ok, {:broadcast_message, "single line message"}}
 
-    iex> Server.Command.parse "list\r\n"
+    iex> Server.Request.parse "list\r\n"
     {:ok, :list_users}
 
-    iex> Server.Command.parse "send_file_to dummy_user file_name 128\r\n"
+    iex> Server.Request.parse "send_file_to dummy_user file_name 128\r\n"
     {:ok, {:send_file, "dummy_user", "file_name", 128}}
 
-    iex> Server.Command.parse "buy_flowers dummy_user\r\n"
+    iex> Server.Request.parse "buy_flowers dummy_user\r\n"
     {:error, :unknown_command}
   """
   def parse(line) do
@@ -61,14 +61,14 @@ defmodule Server.Command do
   end
 
   @doc ~S"""
-  Executes the given `command`.
+  Serves the given `request`.
 
   ## Examples
 
-    iex> Server.Command.run {:ok, {:register, "dummy_user"}}
+    iex> Server.Request.serve {:ok, {:register, "dummy_user"}}
     {:ok, "OK\r\n"}
   """
-  def run(_) do
+  def serve(_) do
     {:ok, "OK\r\n"}
   end
 end
