@@ -13,22 +13,29 @@ defmodule Server do
     {:ok, client} = :gen_tcp.accept socket
 
     Logger.info "Accepted request"
+    client |> :inet.peername |> IO.inspect
 
     {:ok, pid} = Task.Supervisor.start_child(Server.TaskSupervisor, fn ->
-      serve client
+      handle_socket client
     end)
-    :ok = :gen_tcp.controlling_process(client, pid)
+    # :ok = :gen_tcp.controlling_process(client, pid) # handle {:error, :badarg}
+    :gen_tcp.controlling_process(client, pid)
 
     loop_acceptor socket
   end
 
-  defp serve(socket) do
-    response = with {:ok, data} <- read_line(socket),
-                    {:ok, request} <- Request.parse(data),
-                    do: Request.serve request
+  defp handle_socket(socket) do
+    response = with {:ok, line} <- read_line(socket),
+                    do: serve(line)
 
     write_line(socket, response)
-    serve socket
+    handle_socket socket
+  end
+
+  defp serve(line) do
+    result = with {:ok, request} <- Request.parse(line),
+                  do: Request.serve(request)
+    Response.create(result)
   end
 
   defp read_line(socket) do
@@ -37,10 +44,6 @@ defmodule Server do
 
   defp write_line(socket, {:ok, message}) do
     :gen_tcp.send(socket, message)
-  end
-
-  defp write_line(socket, {:error, :unknown_request}) do
-    :gen_tcp.send(socket, "UNKNOWN REQUEST\r\n")
   end
 
   defp write_line(_socket, {:error, :closed}) do
