@@ -1,6 +1,7 @@
 defmodule Server do
   require Logger
   alias Server.Request
+  alias Server.Response
 
   def accept(port) do
     options = [:binary, packet: :line, active: false, reuseaddr: true]

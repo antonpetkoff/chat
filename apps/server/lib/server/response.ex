@@ -1,4 +1,4 @@
-defmodule Response do
+defmodule Server.Response do
   def create({:ok, {:register, user_name}}) do
     {:ok, "200 ok #{user_name} successfully registerred\r\n"}
   end
