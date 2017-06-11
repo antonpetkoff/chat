@@ -7,6 +7,11 @@ defmodule Server.Response do
     {:ok, "100 err #{user_name} #{reason}!\r\n"}
   end
 
+  def create({:ok, {:list_users, users}}) when is_list(users) do
+    users = Enum.join(users, " ")
+    {:ok, "100 ok #{users}\r\n"}
+  end
+
   def create({:error, :bad_request}) do
     {:ok, "400 err bad request\r\n"}
   end

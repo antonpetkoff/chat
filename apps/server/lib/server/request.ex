@@ -77,5 +77,10 @@ defmodule Server.Request do
     end
   end
 
+  def serve(:list_users) do
+    {:ok, users} = API.list
+    {:ok, {:list_users, users}}
+  end
+
   def serve(_), do: {:error, :bad_request}
 end
