@@ -1,6 +1,4 @@
 defmodule Server.Request do
-  alias Server.API
-
   @doc ~S"""
   Parses the given `line` into a request.
 
@@ -61,26 +59,4 @@ defmodule Server.Request do
   defp do_parse(_, _) do
     {:error, :bad_request}
   end
-
-  @doc ~S"""
-  Serves the given `request`.
-
-  ## Examples
-
-    iex> Server.Request.serve {:ok, {:register, "dummy_user"}}
-    {:ok, "OK\r\n"}
-  """
-  def serve({:register, user_name}) do
-    case API.register(user_name) do
-      :ok -> {:ok, {:register, user_name}}
-      {:error, :already_taken} -> {:error, {:register, user_name, "already taken"}}
-    end
-  end
-
-  def serve(:list_users) do
-    {:ok, users} = API.list
-    {:ok, {:list_users, users}}
-  end
-
-  def serve(_), do: {:error, :bad_request}
 end

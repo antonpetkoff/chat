@@ -1,6 +1,7 @@
 defmodule Server do
   require Logger
   alias Server.Request
+  alias Server.API
   alias Server.Response
 
   def accept(port) do
@@ -35,7 +36,7 @@ defmodule Server do
 
   defp serve(line) do
     result = with {:ok, request} <- Request.parse(line),
-                  do: Request.serve(request)
+                  do: API.call(request)
     Response.create(result)
   end
 
