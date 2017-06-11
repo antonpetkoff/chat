@@ -10,7 +10,7 @@ defmodule Server.Application do
     children = [
       worker(Task, [Server, :accept, [port]]),
       supervisor(Task.Supervisor, [[name: Server.TaskSupervisor]]),
-      worker(Server.API, [])
+      worker(Server.Components.Chats, [])
     ]
 
     opts = [strategy: :one_for_one, name: Server.Supervisor]
