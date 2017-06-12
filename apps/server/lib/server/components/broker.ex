@@ -26,6 +26,10 @@ defmodule Server.Components.Broker do
     GenServer.call(__MODULE__, {:send_message, from_username, to_peername, message})
   end
 
+  def broadcast_message(from_username, message) do
+    GenServer.call(__MODULE__, {:broadcast_message, from_username, message})
+  end
+
   def init(_) do
     peers = %{}
     {:ok, peers}
@@ -63,6 +67,15 @@ defmodule Server.Components.Broker do
     case from_username
     |> build_message(message)
     |> Connections.send_message(to_peername) do
+      :ok -> {:reply, :ok, peers}
+      {:error, _} = error -> {:reply, {:error, error}, peers}
+    end
+  end
+
+  def handle_call({:broadcast_message, from_username, message}, _from, peers) do
+    case from_username
+    |> build_message(message)
+    |> Connections.broadcast_message do
       :ok -> {:reply, :ok, peers}
       {:error, _} = error -> {:reply, {:error, error}, peers}
     end

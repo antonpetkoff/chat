@@ -29,6 +29,14 @@ defmodule Server.Response do
     {:ok, "100 err #{username} does not exists\r\n"}
   end
 
+  def create({:ok, :broadcast_message}) do
+    {:ok, "200 ok message sent successfully\r\n"}
+  end
+
+  def create({:error, :broadcast_message}) do
+    {:ok, "100 err server error\r\n"}
+  end
+
   def create({:error, :bad_request}) do
     {:ok, "400 err bad request\r\n"}
   end

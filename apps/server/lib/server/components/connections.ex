@@ -17,6 +17,10 @@ defmodule Server.Components.Connections do
     GenServer.call(__MODULE__, {:send_message, message, peername})
   end
 
+  def broadcast_message(message) do
+    GenServer.call(__MODULE__, {:broadcast_message, message})
+  end
+
   def init(_) do
     sockets = %{}
     {:ok, sockets}
@@ -43,6 +47,18 @@ defmodule Server.Components.Connections do
         :ok -> {:reply, :ok, sockets}
         {:error, _} = error -> {:reply, error, sockets}
       end
+    end
+  end
+
+  def handle_call({:broadcast_message, message}, _from, sockets) do
+    # TODO: parallel enum with Task.Supervisor
+    # TODO: exclude the sender from the broadcast receivers
+    case sockets
+    |> Map.values
+    |> Enum.map(&:gen_tcp.send(&1, message))
+    |> Enum.find(&match?({:error, _}, &1)) do
+      nil -> {:reply, :ok, sockets}
+      {:error, _} = error -> {:reply, error, sockets}
     end
   end
 end
