@@ -9,6 +9,10 @@ defmodule Server.Components.Chats do
     GenServer.call(__MODULE__, {:register_user, user})
   end
 
+  def deregister_user(user) do
+    GenServer.call(__MODULE__, {:deregister_user, user})
+  end
+
   def list_users do
     GenServer.call(__MODULE__, :list_users)
   end
@@ -23,6 +27,13 @@ defmodule Server.Components.Chats do
     case Map.has_key?(chats, user) do
       true -> {:reply, {:error, :already_taken}, chats}
       false -> {:reply, :ok, Map.put(chats, user, %{})}
+    end
+  end
+
+  def handle_call({:deregister_user, user}, _from, chats) do
+    case Map.has_key?(chats, user) do
+      true -> {:reply, :ok, Map.delete(chats, user)}
+      false -> {:reply, {:error, :already_unregistered}, chats}
     end
   end
 

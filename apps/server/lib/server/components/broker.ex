@@ -13,6 +13,10 @@ defmodule Server.Components.Broker do
     GenServer.call(__MODULE__, {:put_offline, peername})
   end
 
+  def get_username(peername) do
+    GenServer.call(__MODULE__, {:get_username, peername})
+  end
+
   def init(_) do
     peers = %{}
     {:ok, peers}
@@ -29,6 +33,13 @@ defmodule Server.Components.Broker do
     case Map.has_key?(peers, peername) do
       true -> {:reply, :ok, Map.delete(peers, peername)}
       false -> {:reply, {:error, :already_offline}, peers}
+    end
+  end
+
+  def handle_call({:get_username, peername}, _from, peers) do
+    case Map.get(peers, peername) do
+      nil -> {:reply, {:error, :not_online}, peers}
+      username -> {:reply, {:ok, username}, peers}
     end
   end
 end

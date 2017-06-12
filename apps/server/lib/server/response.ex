@@ -7,6 +7,15 @@ defmodule Server.Response do
     {:ok, "100 err #{user_name} #{reason}!\r\n"}
   end
 
+  def create({:ok, {:unregister, user_name}}) do
+    {:ok, "200 ok #{user_name} successfully unregistered!\r\n"}
+  end
+
+  # TODO: pass the username?
+  def create({:error, {:unregister, user_name, reason}}) do
+    {:ok, "100 err #{user_name} #{reason}!\r\n"}
+  end
+
   def create({:ok, {:list_users, users}}) when is_list(users) do
     users = Enum.join(users, " ")
     {:ok, "100 ok #{users}\r\n"}

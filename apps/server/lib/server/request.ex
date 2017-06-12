@@ -56,6 +56,10 @@ defmodule Server.Request do
     {:ok, {:send_file, user_name, file_name, packages_count}}
   end
 
+  defp do_parse("bye", []) do
+    {:ok, :unregister}
+  end
+
   defp do_parse(_, _) do
     {:error, :bad_request}
   end

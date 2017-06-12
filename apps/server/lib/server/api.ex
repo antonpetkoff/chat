@@ -24,6 +24,21 @@ defmodule Server.API do
     end
   end
 
+  def call(:unregister, [from_socket: socket]) do
+    peername = :inet.peername socket
+
+    unregistration = with {:ok, username} <- Broker.get_username(peername),
+                          :ok <- Connections.unlink(peername),
+                          :ok <- Broker.put_offline(peername),
+                          :ok <- Chats.deregister_user(username),
+                          do: {:ok, {:unregister, username}}
+
+    case unregistration do
+      {:error, _} -> {:error, {:unregister, "you", "are already unregistered"}}
+      result -> result
+    end
+  end
+
   def call(:list_users, _options) do
     {:ok, users} = Chats.list_users
     {:ok, {:list_users, users}}
