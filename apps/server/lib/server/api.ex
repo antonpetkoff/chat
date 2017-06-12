@@ -39,6 +39,19 @@ defmodule Server.API do
     end
   end
 
+  def call({:send_message, to_username, message}, [from_socket: socket]) do
+    result = with {:ok, to_peername} <- Broker.get_peername(to_username),
+                  {:ok, from_username} <- socket
+                                          |> :inet.peername
+                                          |> Broker.get_username,
+                  do: Broker.send_message(from_username, to_peername, message)
+
+    case result do
+      :ok -> {:ok, {:send_message, to_username}}
+      {:error, _} -> {:error, {:send_message, to_username}}
+    end
+  end
+
   def call(:list_users, _options) do
     {:ok, users} = Chats.list_users
     {:ok, {:list_users, users}}

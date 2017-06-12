@@ -1,5 +1,6 @@
 defmodule Server.Components.Broker do
   use GenServer
+  alias Server.Components.Connections
 
   def start_link do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -15,6 +16,14 @@ defmodule Server.Components.Broker do
 
   def get_username(peername) do
     GenServer.call(__MODULE__, {:get_username, peername})
+  end
+
+  def get_peername(username) do
+    GenServer.call(__MODULE__, {:get_peername, username})
+  end
+
+  def send_message(from_peername, to_peername, message) do
+    GenServer.call(__MODULE__, {:send_message, from_peername, to_peername, message})
   end
 
   def init(_) do
@@ -41,5 +50,25 @@ defmodule Server.Components.Broker do
       nil -> {:reply, {:error, :not_online}, peers}
       username -> {:reply, {:ok, username}, peers}
     end
+  end
+
+  def handle_call({:get_peername, username}, _from, peers) do
+    case Enum.find(peers, fn {_, user} -> user == username end) do
+      nil -> {:reply, {:error, :not_found}, peers}
+      {peername, _} -> {:reply, {:ok, peername}, peers}
+    end
+  end
+
+  def handle_call({:send_message, from_username, to_peername, message}, _from, peers) do
+    case from_username
+    |> build_message(message)
+    |> Connections.send_message(to_peername) do
+      :ok -> {:reply, :ok, peers}
+      {:error, _} = error -> {:reply, {:error, error}, peers}
+    end
+  end
+
+  defp build_message(from_username, body) do
+    "300 msg_from #{from_username} #{body}\r\n"
   end
 end
