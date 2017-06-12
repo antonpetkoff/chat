@@ -40,4 +40,8 @@ defmodule Server.Response do
   def create({:error, :bad_request}) do
     {:ok, "400 err bad request\r\n"}
   end
+
+  def message(from_username, body) do
+    "300 msg_from #{from_username} #{body}\r\n"
+  end
 end

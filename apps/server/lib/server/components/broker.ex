@@ -1,6 +1,7 @@
 defmodule Server.Components.Broker do
   use GenServer
   alias Server.Components.Connections
+  alias Server.Response
 
   def start_link do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -64,24 +65,30 @@ defmodule Server.Components.Broker do
   end
 
   def handle_call({:send_message, from_username, to_peername, message}, _from, peers) do
-    case from_username
-    |> build_message(message)
-    |> Connections.send_message(to_peername) do
-      :ok -> {:reply, :ok, peers}
-      {:error, _} = error -> {:reply, {:error, error}, peers}
-    end
+    do_send_message(
+      from_username,
+      message,
+      &Connections.send_message(&1, to_peername),
+      peers
+    )
   end
 
   def handle_call({:broadcast_message, from_username, message}, _from, peers) do
+    do_send_message(
+      from_username,
+      message,
+      &Connections.broadcast_message(&1),
+      peers
+    )
+  end
+
+  defp do_send_message(from_username, message_body, send_fn, peers)
+       when is_function(send_fn) do
     case from_username
-    |> build_message(message)
-    |> Connections.broadcast_message do
+    |> Response.message(message_body)
+    |> send_fn.() do
       :ok -> {:reply, :ok, peers}
       {:error, _} = error -> {:reply, {:error, error}, peers}
     end
-  end
-
-  defp build_message(from_username, body) do
-    "300 msg_from #{from_username} #{body}\r\n"
   end
 end
