@@ -10,6 +10,8 @@ defmodule Server.Application do
     children = [
       worker(Task, [Server, :accept, [port]]),
       supervisor(Task.Supervisor, [[name: Server.TaskSupervisor]]),
+      worker(Server.Components.Connections, []),
+      worker(Server.Components.Broker, []),
       worker(Server.Components.Chats, [])
     ]
 

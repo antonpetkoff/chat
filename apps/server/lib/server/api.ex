@@ -1,4 +1,5 @@
 defmodule Server.API do
+  alias Server.Components.Connections
   alias Server.Components.Broker
   alias Server.Components.Chats
 
@@ -7,20 +8,26 @@ defmodule Server.API do
 
   ## Examples
 
-    iex> Server.API.call {:register, "dummy_user"}
+    iex> Server.API.call {:register, "dummy_user"}, []
     {:ok, {:register, "dummy_user"}}
   """
-  def call({:register, user_name}) do
-    case Chats.register_user(user_name) do
-      :ok -> {:ok, {:register, user_name}}
-      {:error, :already_taken} -> {:error, {:register, user_name, "already taken"}}
+  def call({:register, username}, [from_socket: socket]) do
+    peername = :inet.peername socket
+
+    registration = with :ok <- Connections.link(peername, socket),
+                        :ok <- Broker.put_online(username, peername),
+                        do: Chats.register_user(username)
+
+    case registration do
+      :ok -> {:ok, {:register, username}}
+      {:error, _} -> {:error, {:register, username, "already taken"}}
     end
   end
 
-  def call(:list_users) do
+  def call(:list_users, _options) do
     {:ok, users} = Chats.list_users
     {:ok, {:list_users, users}}
   end
 
-  def call(_), do: {:error, :bad_request}
+  def call(_bad_request, _options), do: {:error, :bad_request}
 end

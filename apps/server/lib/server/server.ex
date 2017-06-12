@@ -28,15 +28,17 @@ defmodule Server do
 
   defp handle_socket(socket) do
     response = with {:ok, line} <- read_line(socket),
-                    do: serve(line)
+                    do: serve(line, socket)
 
     write_line(socket, response)
     handle_socket socket
   end
 
-  defp serve(line) do
+  defp serve(line, socket) do
+    options = [from_socket: socket]
+
     result = with {:ok, request} <- Request.parse(line),
-                  do: API.call(request)
+                  do: API.call(request, options)
     Response.create(result)
   end
 
