@@ -22,8 +22,8 @@ defmodule Server.Components.Broker do
     GenServer.call(__MODULE__, {:get_peername, username})
   end
 
-  def send_message(from_peername, to_peername, message) do
-    GenServer.call(__MODULE__, {:send_message, from_peername, to_peername, message})
+  def send_message(from_username, to_peername, message) do
+    GenServer.call(__MODULE__, {:send_message, from_username, to_peername, message})
   end
 
   def init(_) do
