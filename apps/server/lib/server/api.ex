@@ -1,4 +1,5 @@
 defmodule Server.API do
+  alias Server.Components.Broker
   alias Server.Components.Chats
 
   @doc ~S"""
