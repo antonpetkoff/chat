@@ -15,18 +15,18 @@ defmodule Server.Components.Chats do
 
   def init(_) do
     # TODO: create User and ChatHistory models
-    users = %{}
-    {:ok, users}
+    chats = %{}
+    {:ok, chats}
   end
 
-  def handle_call({:register_user, user}, _from, state) do
-    case Map.has_key?(state, user) do
-      true -> {:reply, {:error, :already_taken}, state}
-      false -> {:reply, :ok, Map.put(state, user, %{})}
+  def handle_call({:register_user, user}, _from, chats) do
+    case Map.has_key?(chats, user) do
+      true -> {:reply, {:error, :already_taken}, chats}
+      false -> {:reply, :ok, Map.put(chats, user, %{})}
     end
   end
 
-  def handle_call(:list_users, _from, state) do
-    {:reply, {:ok, Map.keys state}, state}
+  def handle_call(:list_users, _from, chats) do
+    {:reply, {:ok, Map.keys chats}, chats}
   end
 end
