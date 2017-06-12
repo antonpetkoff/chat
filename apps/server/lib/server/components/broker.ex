@@ -5,12 +5,12 @@ defmodule Server.Components.Broker do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def put_online(username, peername) do
-    GenServer.call(__MODULE__, {:put_online, username, peername})
+  def put_online(peername, username) do
+    GenServer.call(__MODULE__, {:put_online, peername, username})
   end
 
-  def put_offline(username) do
-    GenServer.call(__MODULE__, {:put_offline, username})
+  def put_offline(peername) do
+    GenServer.call(__MODULE__, {:put_offline, peername})
   end
 
   def init(_) do
@@ -18,16 +18,16 @@ defmodule Server.Components.Broker do
     {:ok, peers}
   end
 
-  def handle_call({:put_online, username, peername}, _from, peers) do
-    case Map.has_key?(peers, username) do
+  def handle_call({:put_online, peername, username}, _from, peers) do
+    case Map.has_key?(peers, peername) do
       true -> {:reply, {:error, :already_online}, peers}
-      false -> {:reply, :ok, Map.put(peers, username, peername)}
+      false -> {:reply, :ok, Map.put(peers, peername, username)}
     end
   end
 
-  def handle_call({:put_offline, username}, _from, peers) do
-    case Map.has_key?(peers, username) do
-      true -> {:reply, :ok, Map.delete(peers, username)}
+  def handle_call({:put_offline, peername}, _from, peers) do
+    case Map.has_key?(peers, peername) do
+      true -> {:reply, :ok, Map.delete(peers, peername)}
       false -> {:reply, {:error, :already_offline}, peers}
     end
   end

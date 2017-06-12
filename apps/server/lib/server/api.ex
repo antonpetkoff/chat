@@ -15,7 +15,7 @@ defmodule Server.API do
     peername = :inet.peername socket
 
     registration = with :ok <- Connections.link(peername, socket),
-                        :ok <- Broker.put_online(username, peername),
+                        :ok <- Broker.put_online(peername, username),
                         do: Chats.register_user(username)
 
     case registration do
