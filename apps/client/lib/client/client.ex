@@ -2,18 +2,20 @@ defmodule Client do
   require Logger
   use GenServer
 
-  @initial_state %{socket: nil}
-
-  def start_link do
-    GenServer.start_link(__MODULE__, @initial_state, name: __MODULE__)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
-  def init(state) do
+  def init(args) do
+    host = args[:host]
+    port = args[:port]
     options = [:binary, active: false, packet: :line]
-    {:ok, server} = :gen_tcp.connect('localhost', 4040, options)
 
-    Logger.info "Client connected"
-    {:ok, %{state | socket: server}}
+    Logger.info "Client connecting to #{host}@#{port}..."
+    {:ok, server} = :gen_tcp.connect(host, port, options)
+
+    Logger.info "Client connected to #{host}@#{port}"
+    {:ok, %{socket: server}}
   end
 
   def execute(command) do

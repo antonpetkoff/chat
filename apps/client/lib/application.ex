@@ -4,11 +4,11 @@ defmodule Client.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    host = "localhost"
+    host = 'localhost'
     port = 4040
 
     children = [
-      worker(Client, []),
+      worker(Client, [[host: host, port: port]]),
       supervisor(Task.Supervisor, [[name: :tasks_supervisor]])
     ]
 
