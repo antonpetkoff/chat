@@ -1,6 +1,8 @@
 defmodule Client do
   require Logger
   use GenServer
+  alias Client.TCPMessage
+  alias Client.API
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
@@ -22,15 +24,27 @@ defmodule Client do
     GenServer.call(__MODULE__, {:execute, command})
   end
 
-  def handle_info({:tcp, socket, msg}, %{socket: socket} = state) do
-    Logger.info "Received #{msg}"
-    GenServer.reply(state.from, msg)
+  #TODO: def handle_info({:tcp_closed, socket}, ...
+  #TODO: always say "bye\r\n" to the server to close your session
+
+  def handle_info({:tcp, socket, message}, %{socket: socket} = state) do
+    Logger.info "Received: #{message}"
+
+    case TCPMessage.parse message do
+      {:ok, {:response, response}} ->
+        GenServer.reply(state.from, {:ok, response})
+      {:ok, {:message, action}} ->
+        :ok = API.handle action # TODO: in a separate task
+      {:error, _} = error ->
+        GenServer.reply(state.from, error)
+    end
+
     {:noreply, state}
   end
 
   def handle_call({:execute, command}, from, %{socket: socket} = state) do
     :ok = :gen_tcp.send(socket, command)
-    Logger.info "Sent #{command}"
+    Logger.info "Sent: #{command}"
     # TODO: we could use a :queue to store "from" for each request (command)
     #       but the client is just a single process and "from" is always the same
     {:noreply, %{state | from: from}}

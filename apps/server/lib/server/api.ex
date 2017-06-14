@@ -65,8 +65,10 @@ defmodule Server.API do
   end
 
   def call(:list_users, _options) do
-    {:ok, users} = Chats.list_users
-    {:ok, {:list_users, users}}
+    case Chats.list_users do
+      {:ok, []} -> {:error, :list_users}
+      {:ok, users} -> {:ok, {:list_users, users}}
+    end
   end
 
   def call(_bad_request, _options), do: {:error, :bad_request}

@@ -18,7 +18,11 @@ defmodule Server.Response do
 
   def create({:ok, {:list_users, users}}) when is_list(users) do
     users = Enum.join(users, " ")
-    {:ok, "100 ok #{users}\r\n"}
+    {:ok, "200 ok #{users}\r\n"}
+  end
+
+  def create({:error, :list_users}) do
+    {:ok, "100 err server error\r\n"}
   end
 
   def create({:ok, {:send_message, username}}) do
