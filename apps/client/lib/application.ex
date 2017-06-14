@@ -8,6 +8,7 @@ defmodule Client.Application do
     port = 4040
 
     children = [
+      worker(Task, [Client.CLI, :interpret, []]),
       worker(Client, [[host: host, port: port]]),
       supervisor(Task.Supervisor, [[name: :tasks_supervisor]])
     ]
