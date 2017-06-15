@@ -17,6 +17,9 @@ defmodule Client.API do
     # connect to destination
     # send packages
 
+    Client.execute("send_file_to #{username} #{filename} #{chunks_count}\r\n")
+    |> IO.inspect
+
     :ok
   end
 

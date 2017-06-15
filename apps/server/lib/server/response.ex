@@ -41,6 +41,14 @@ defmodule Server.Response do
     {:ok, "100 err server error\r\n"}
   end
 
+  def create({:error, :send_file}) do
+    {:ok, "200 file transferred successfully\r\n"}
+  end
+
+  def create({:error, :send_file}) do
+    {:ok, "100 err server error\r\n"}
+  end
+
   def create({:error, :bad_request}) do
     {:ok, "400 err bad request\r\n"}
   end
