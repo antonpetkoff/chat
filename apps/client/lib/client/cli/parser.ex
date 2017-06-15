@@ -16,6 +16,9 @@ defmodule Client.CLI.Parser do
     iex> Client.CLI.Parser.parse "send_to ivan hello, ivan"
     {:ok, {:send_message, "ivan", "hello, ivan"}}
 
+    iex> Client.CLI.Parser.parse "send_file_to ivan filename"
+    {:ok, {:send_file, "ivan", "filename"}}
+
     iex> Client.CLI.Parser.parse "send_all hello, everyone"
     {:ok, {:broadcast, "hello, everyone"}}
 
@@ -44,6 +47,11 @@ defmodule Client.CLI.Parser do
   def do_parse("send_to", [body]) do
     [username, message] = String.split(body, " ", parts: 2)
     {:ok, {:send_message, username, message}}
+  end
+
+  def do_parse("send_file_to", [body]) do
+    [username, filename] = String.split(body, " ", parts: 2)
+    {:ok, {:send_file, username, filename}}
   end
 
   def do_parse("send_all", [message]) do
