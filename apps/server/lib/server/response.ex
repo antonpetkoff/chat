@@ -41,8 +41,8 @@ defmodule Server.Response do
     {:ok, "100 err server error\r\n"}
   end
 
-  def create({:error, :send_file}) do
-    {:ok, "200 file transferred successfully\r\n"}
+  def create({:ok, {:send_file, socket_pair}}) do
+    {:ok, "200 ok #{socket_pair}\r\n"}
   end
 
   def create({:error, :send_file}) do

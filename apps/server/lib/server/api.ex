@@ -53,17 +53,27 @@ defmodule Server.API do
   end
 
   def call({:send_file, username, filename, chunks_count}, [from_socket: socket]) do
-    # TODO:
     # ask receiver client to open a port
+    {:ok, to_peername} = Broker.get_peername username
+    request = "501 rcv_file #{username} #{filename} #{chunks_count}\r\n"
+    :ok = Connections.send_message(request, to_peername)
+
+    IO.puts "request sent! waiting for response from client"
+
+    {:ok, response} = :gen_tcp.recv(socket, 0)
+
     # send to sender client the socket pair of the listening receiver client
-    # wait for receiver client to respond if the file has been sent
-    # send response from receiver to sender
-    {:error, :send_file}
+    case response
+    |> String.trim
+    |> String.split(" ", parts: 3) do
+      ["502", "rcv_file", socket_pair] -> {:ok, {:send_file, socket_pair}}
+      _ -> {:error, :send_file}
+    end
   end
 
   def call({:broadcast_message, message}, [from_socket: socket]) do
     result = with {:ok, from_username} <- socket
-                                          |> :inet.peername
+                                          |> :inet.peername # TODO: {:ok, pair} is returned
                                           |> Broker.get_username,
                   do: Broker.broadcast_message(from_username, message)
 

@@ -50,7 +50,7 @@ defmodule Client do
       {:ok, {:response, response}} ->
         GenServer.reply(from, {:ok, response})
       {:ok, {:message, action}} ->
-        :ok = API.handle action
+        :ok = API.handle(action, [server_socket: socket])
       {:error, _} = error ->
         GenServer.reply(from, error)
     end

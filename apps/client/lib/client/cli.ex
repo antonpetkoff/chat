@@ -5,7 +5,7 @@ defmodule Client.CLI do
   def interpret do
     interaction = with input <- IO.gets("|> "),
                        {:ok, command} <- Parser.parse(input),
-                       do: API.handle(command)
+                       do: API.handle(command, []) # TODO: use another module
 
     case interaction do
       :ok -> IO.puts "success"

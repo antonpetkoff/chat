@@ -18,6 +18,11 @@ defmodule Client.TCPMessage do
     {:ok, {:response, users}}
   end
 
+  def do_parse("501", "rcv_file", body) do
+    [username, filename, chunk_size] = String.split(body, " ", parts: 3)
+    {:ok, {:message, {:receive_file, username, filename, chunk_size}}}
+  end
+
   def do_parse(code, status, body) do
     {:error, "#{code} #{status} #{body}"}
   end
