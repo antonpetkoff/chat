@@ -60,4 +60,8 @@ defmodule Server.Response do
   def message(from_username, body) do
     "300 msg_from #{from_username} #{body}\r\n"
   end
+
+  def message({:receive_file, username, filename, chunks_count}) do
+    "501 rcv_file #{username} #{filename} #{chunks_count}\r\n"
+  end
 end

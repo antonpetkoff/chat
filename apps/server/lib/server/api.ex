@@ -3,6 +3,7 @@ defmodule Server.API do
   alias Server.Components.Broker
   alias Server.Components.Chats
   alias Server.Components.P2P
+  alias Server.Response
 
   @doc ~S"""
   Serves the given `request`.
@@ -54,15 +55,13 @@ defmodule Server.API do
   end
 
   def call({:send_file, username, filename, chunks_count}, _) do
-    # ask receiver client to open a port
     {:ok, to_peername} = Broker.get_peername username
-    request = "501 rcv_file #{username} #{filename} #{chunks_count}\r\n"
-    :ok = Connections.send_message(request, to_peername)
 
-    socket_request = P2P.request_socket(username, filename)
+    # TODO: Response.message sounds bad, another module?
+    :ok = Response.message({:receive_file, username, filename, chunks_count})
+    |> Connections.send_message(to_peername)
 
-    # send to sender client the socket pair of the listening receiver client
-    case socket_request do
+    case P2P.expect_socket(username, filename) do
       {:ok, socket_pair} -> {:ok, {:send_file, socket_pair}}
       {:error, _} -> {:error, :send_file}
     end
