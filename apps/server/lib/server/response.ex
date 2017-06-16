@@ -49,6 +49,10 @@ defmodule Server.Response do
     {:ok, "100 err server error\r\n"}
   end
 
+  def create({:ok, :receive_socket}) do
+    {:ok, "200 ok socket received\r\n"}
+  end
+
   def create({:error, :bad_request}) do
     {:ok, "400 err bad request\r\n"}
   end

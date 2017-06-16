@@ -56,6 +56,11 @@ defmodule Server.Request do
     {:ok, {:send_file, user_name, file_name, packages_count}}
   end
 
+  defp do_parse("open_socket", [body]) do
+    [username, filename, socket_pair] = String.split(body, " ", parts: 3)
+    {:ok, {:receive_socket, username, filename, socket_pair}}
+  end
+
   defp do_parse("bye", []) do
     {:ok, :unregister}
   end

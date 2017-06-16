@@ -2,6 +2,7 @@ defmodule Server.API do
   alias Server.Components.Connections
   alias Server.Components.Broker
   alias Server.Components.Chats
+  alias Server.Components.P2P
 
   @doc ~S"""
   Serves the given `request`.
@@ -52,23 +53,24 @@ defmodule Server.API do
     end
   end
 
-  def call({:send_file, username, filename, chunks_count}, [from_socket: socket]) do
+  def call({:send_file, username, filename, chunks_count}, _) do
     # ask receiver client to open a port
     {:ok, to_peername} = Broker.get_peername username
     request = "501 rcv_file #{username} #{filename} #{chunks_count}\r\n"
     :ok = Connections.send_message(request, to_peername)
 
-    IO.puts "request sent! waiting for response from client"
-
-    {:ok, response} = :gen_tcp.recv(socket, 0)
+    socket_request = P2P.request_socket(username, filename)
 
     # send to sender client the socket pair of the listening receiver client
-    case response
-    |> String.trim
-    |> String.split(" ", parts: 3) do
-      ["502", "rcv_file", socket_pair] -> {:ok, {:send_file, socket_pair}}
-      _ -> {:error, :send_file}
+    case socket_request do
+      {:ok, socket_pair} -> {:ok, {:send_file, socket_pair}}
+      {:error, _} -> {:error, :send_file}
     end
+  end
+
+  def call({:receive_socket, username, filename, socket_pair}, _) do
+    send(P2P, {:receive_socket, username, filename, socket_pair})
+    {:ok, :receive_socket}
   end
 
   def call({:broadcast_message, message}, [from_socket: socket]) do

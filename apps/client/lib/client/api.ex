@@ -30,7 +30,7 @@ defmodule Client.API do
 
     # TODO: create listening socket and send it back to server
 
-    :gen_tcp.send(socket, "502 rcv_file localhost@42\r\n")
+    :gen_tcp.send(socket, "open_socket #{username} #{filename} localhost@42\r\n")
     :ok
   end
 
