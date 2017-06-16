@@ -57,6 +57,9 @@ defmodule Server.API do
   def call({:send_file, username, filename, chunks_count}, _) do
     {:ok, to_peername} = Broker.get_peername username
 
+    # TODO: is it better to use all components in this API
+    #       or is it better for components to use each other (more coupling)
+    #       and extract code from this API into the components?
     # TODO: Response.message sounds bad, another module?
     :ok = Response.message({:receive_file, username, filename, chunks_count})
     |> Connections.send_message(to_peername)
