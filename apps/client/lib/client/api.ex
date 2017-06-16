@@ -18,6 +18,13 @@ defmodule Client.API do
     :ok
   end
 
+  def handle({:send_message, username, message}) do
+    Client.execute("send_to #{username} #{message}\r\n")
+    |> IO.inspect
+
+    :ok
+  end
+
   def handle({:send_file, username, filename}) do
     chunks = read_chunks(filename, 512)
     chunks_count = Enum.count chunks
