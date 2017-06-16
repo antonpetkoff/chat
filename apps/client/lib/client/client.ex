@@ -27,17 +27,12 @@ defmodule Client do
   #TODO: def handle_info({:tcp_closed, socket}, ...
   #TODO: always say "bye\r\n" to the server to close your session
 
-  def handle_info({:tcp, socket, message}, %{socket: socket} = state) do
+  def handle_info({:tcp, socket, message}, %{socket: socket, from: from} = state) do
     Logger.info "Received: #{message}"
 
-    case TCPMessage.parse message do
-      {:ok, {:response, response}} ->
-        GenServer.reply(state.from, {:ok, response})
-      {:ok, {:message, action}} ->
-        :ok = API.handle action # TODO: in a separate task
-      {:error, _} = error ->
-        GenServer.reply(state.from, error)
-    end
+    Task.Supervisor.start_child(:tasks_supervisor, fn ->
+      handle_message(message, from, socket)
+    end)
 
     {:noreply, state}
   end
@@ -48,5 +43,16 @@ defmodule Client do
     # TODO: we could use a :queue to store "from" for each request (command)
     #       but the client is just a single process and "from" is always the same
     {:noreply, %{state | from: from}}
+  end
+
+  defp handle_message(message, from, socket) do
+    case TCPMessage.parse message do
+      {:ok, {:response, response}} ->
+        GenServer.reply(from, {:ok, response})
+      {:ok, {:message, action}} ->
+        :ok = API.handle action
+      {:error, _} = error ->
+        GenServer.reply(from, error)
+    end
   end
 end
