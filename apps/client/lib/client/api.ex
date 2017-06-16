@@ -4,6 +4,20 @@ defmodule Client.API do
     :ok
   end
 
+  def handle({:register, username}) do
+    Client.execute("user #{username}\r\n")
+    |> IO.inspect
+
+    :ok
+  end
+
+  def handle(:list) do
+    Client.execute("list\r\n")
+    |> IO.inspect
+
+    :ok
+  end
+
   def handle({:send_file, username, filename}) do
     chunks = read_chunks(filename, 512)
     chunks_count = Enum.count chunks
