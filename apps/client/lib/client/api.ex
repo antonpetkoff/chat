@@ -1,4 +1,6 @@
 defmodule Client.API do
+  alias Client.FileTransfer
+
   def handle({:message_from, message, username}, _) do
     # TODO: Store message in chat history
     :ok
@@ -28,9 +30,19 @@ defmodule Client.API do
   def handle({:receive_file, username, filename, chunks_count}, [server_socket: socket]) do
     IO.puts "receive file #{filename} from #{username} of size #{chunks_count}"
 
-    # TODO: create listening socket and send it back to server
+    {:ok, file_transfer_socket} = FileTransfer.open_socket
 
-    :gen_tcp.send(socket, "open_socket #{username} #{filename} localhost@42\r\n")
+    {:ok, _} = Task.Supervisor.start_child(:tasks_supervisor, fn ->
+      FileTransfer.receive(file_transfer_socket, chunks_count)
+    end)
+
+    IO.puts "receiver opened socket and is listening at"
+    file_transfer_socket |> :inet.sockname |> IO.inspect
+
+    {:ok, socket_pair} = :inet.sockname file_transfer_socket
+    socket_pair = socket_pair_to_string socket_pair
+
+    :gen_tcp.send(socket, "open_socket #{username} #{filename} #{socket_pair}\r\n")
     :ok
   end
 
@@ -61,5 +73,9 @@ defmodule Client.API do
 
     Stream.repeatedly(fn -> IO.binread(file, chunk_size) end)
     |> Enum.take_while(fn bytes -> not match?(:eof, bytes) end)
+  end
+
+  defp socket_pair_to_string({{a, b, c, d}, port}) when is_integer(port) do
+    "#{a}.#{b}.#{c}.#{d}@#{port}"
   end
 end
