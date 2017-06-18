@@ -58,8 +58,12 @@ defmodule Client.API do
     # connect to destination
     # send packages
 
-    Client.execute("send_file_to #{username} #{filename} #{chunks_count}\r\n")
-    |> IO.inspect
+    {:ok, [socket_pair]} = Client.execute("send_file_to #{username} #{filename} #{chunks_count}\r\n")
+    {host, port} = socket_pair_from_string socket_pair
+    options = [:binary, active: false, packet: :line]
+    {:ok, socket} = :gen_tcp.connect(host, port, options)
+
+    IO.puts "Connected to #{host}@#{port}"
 
     :ok
   end
@@ -77,5 +81,11 @@ defmodule Client.API do
 
   defp socket_pair_to_string({{a, b, c, d}, port}) when is_integer(port) do
     "#{a}.#{b}.#{c}.#{d}@#{port}"
+  end
+
+  defp socket_pair_from_string(string) do
+    [host, port] = String.split(string, "@", parts: 2)
+    {port, _} = Integer.parse port
+    {to_charlist(host), port}
   end
 end

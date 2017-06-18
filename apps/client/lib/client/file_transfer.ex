@@ -6,7 +6,10 @@ defmodule Client.FileTransfer do
 
   def receive(socket, chunks_count) do
     IO.puts "waiting to accept..."
+
     {:ok, sender} = :gen_tcp.accept socket
+    # TODO: :gen_tcp.accept always returns {:error, :closed}. But why?
+
     # TODO: verify that the sender has connected
 
     receive_chunk(sender, chunks_count)
