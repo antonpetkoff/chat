@@ -30,17 +30,17 @@ defmodule Client.API do
   def handle({:receive_file, username, filename, chunks_count}, [server_socket: socket]) do
     IO.puts "receive file #{filename} from #{username} of size #{chunks_count}"
 
-    {:ok, file_transfer_socket} = FileTransfer.open_socket
-
+    self_pid = self()
     {:ok, _} = Task.Supervisor.start_child(:tasks_supervisor, fn ->
-      FileTransfer.receive(file_transfer_socket, chunks_count)
+      FileTransfer.receive(self_pid, chunks_count)
     end)
 
-    IO.puts "receiver opened socket and is listening at"
-    file_transfer_socket |> :inet.sockname |> IO.inspect
+    socket_pair = receive do
+      {:ok, tuple} -> socket_pair_to_string tuple
+      # TODO: what if an error occurs?
+    end
 
-    {:ok, socket_pair} = :inet.sockname file_transfer_socket
-    socket_pair = socket_pair_to_string socket_pair
+    IO.puts "receiver opened socket and is listening at #{socket_pair}"
 
     :gen_tcp.send(socket, "open_socket #{username} #{filename} #{socket_pair}\r\n")
     :ok
