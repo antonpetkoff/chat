@@ -2,6 +2,8 @@ defmodule Server.API do
   alias Server.Components.Connections
   alias Server.Components.Broker
   alias Server.Components.Chats
+  alias Server.Components.P2P
+  alias Server.Response
 
   @doc ~S"""
   Serves the given `request`.
@@ -52,18 +54,30 @@ defmodule Server.API do
     end
   end
 
-  def call({:send_file, username, filename, chunks_count}, [from_socket: socket]) do
-    # TODO:
-    # ask receiver client to open a port
-    # send to sender client the socket pair of the listening receiver client
-    # wait for receiver client to respond if the file has been sent
-    # send response from receiver to sender
-    {:error, :send_file}
+  def call({:send_file, username, filename, chunks_count}, _) do
+    {:ok, to_peername} = Broker.get_peername username
+
+    # TODO: is it better to use all components in this API
+    #       or is it better for components to use each other (more coupling)
+    #       and extract code from this API into the components?
+    # TODO: Response.message sounds bad, another module?
+    :ok = Response.message({:receive_file, username, filename, chunks_count})
+    |> Connections.send_message(to_peername)
+
+    case P2P.expect_socket(username, filename) do
+      {:ok, socket_pair} -> {:ok, {:send_file, socket_pair}}
+      {:error, _} -> {:error, :send_file}
+    end
+  end
+
+  def call({:receive_socket, username, filename, socket_pair}, _) do
+    send(P2P, {:receive_socket, username, filename, socket_pair})
+    {:ok, :receive_socket}
   end
 
   def call({:broadcast_message, message}, [from_socket: socket]) do
     result = with {:ok, from_username} <- socket
-                                          |> :inet.peername
+                                          |> :inet.peername # TODO: {:ok, pair} is returned
                                           |> Broker.get_username,
                   do: Broker.broadcast_message(from_username, message)
 

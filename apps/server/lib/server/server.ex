@@ -35,6 +35,8 @@ defmodule Server do
   end
 
   defp serve(line, socket) do
+    Logger.info "Received TCP message: #{line}"
+
     options = [from_socket: socket]
 
     result = with {:ok, request} <- Request.parse(line),

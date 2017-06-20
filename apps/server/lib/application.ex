@@ -12,7 +12,8 @@ defmodule Server.Application do
       supervisor(Task.Supervisor, [[name: Server.TaskSupervisor]]),
       worker(Server.Components.Connections, []),
       worker(Server.Components.Broker, []),
-      worker(Server.Components.Chats, [])
+      worker(Server.Components.Chats, []),
+      worker(Server.Components.P2P, [])
     ]
 
     opts = [strategy: :one_for_one, name: Server.Supervisor]

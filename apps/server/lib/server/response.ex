@@ -41,12 +41,16 @@ defmodule Server.Response do
     {:ok, "100 err server error\r\n"}
   end
 
-  def create({:error, :send_file}) do
-    {:ok, "200 file transferred successfully\r\n"}
+  def create({:ok, {:send_file, socket_pair}}) do
+    {:ok, "200 ok #{socket_pair}\r\n"}
   end
 
   def create({:error, :send_file}) do
     {:ok, "100 err server error\r\n"}
+  end
+
+  def create({:ok, :receive_socket}) do
+    {:ok, "200 ok socket received\r\n"}
   end
 
   def create({:error, :bad_request}) do
@@ -55,5 +59,9 @@ defmodule Server.Response do
 
   def message(from_username, body) do
     "300 msg_from #{from_username} #{body}\r\n"
+  end
+
+  def message({:receive_file, username, filename, chunks_count}) do
+    "501 rcv_file #{username} #{filename} #{chunks_count}\r\n"
   end
 end
