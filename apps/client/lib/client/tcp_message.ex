@@ -20,6 +20,7 @@ defmodule Client.TCPMessage do
 
   def do_parse("501", "rcv_file", body) do
     [username, filename, chunk_size] = String.split(body, " ", parts: 3)
+    {chunk_size, _} = Integer.parse chunk_size
     {:ok, {:message, {:receive_file, username, filename, chunk_size}}}
   end
 

@@ -27,7 +27,8 @@ defmodule Client.API do
     :ok
   end
 
-  def handle({:receive_file, username, filename, chunks_count}, [server_socket: socket]) do
+  def handle({:receive_file, username, filename, chunks_count}, [server_socket: socket])
+      when is_integer(chunks_count) do
     IO.puts "receive file #{filename} from #{username} of size #{chunks_count}"
 
     self_pid = self()
@@ -50,21 +51,11 @@ defmodule Client.API do
     chunks = read_chunks(filename, 512)
     chunks_count = Enum.count chunks
     IO.puts "#{chunks_count} chunks read"
-
-    # chunks = Enum.map(chunks, &Base.encode64/1)
-
-    # TODO:
-    # ask server for where to send the files
-    # connect to destination
-    # send packages
+    chunks = Enum.map(chunks, &Base.encode64/1)
 
     {:ok, [socket_pair]} = Client.execute("send_file_to #{username} #{filename} #{chunks_count}\r\n")
     {host, port} = socket_pair_from_string socket_pair
-    options = [:binary, active: false, packet: :line]
-    {:ok, socket} = :gen_tcp.connect(host, port, options)
-
-    IO.puts "Connected to #{host}@#{port}"
-
+    FileTransfer.send(chunks, host, port)
     :ok
   end
 

@@ -8,23 +8,31 @@ defmodule Client.FileTransfer do
 
     {:ok, sender} = :gen_tcp.accept socket
     # TODO: verify that the sender has connected
-    receive_chunk(sender, chunks_count)
+    receive_chunk(sender, chunks_count, [])
   end
 
-  defp receive_chunk(socket, 0) do
+  defp receive_chunk(socket, 0, received_chunks) do
+    received_file = received_chunks
+    |> Enum.reverse
+    |> Enum.map(&Base.decode64!/1)
+    |> Enum.join
+
+    IO.puts "File received successfully:\n#{received_file}"
+
     :ok = :gen_tcp.shutdown(socket, :read_write)
   end
 
-  defp receive_chunk(socket, chunks_count) do
+  defp receive_chunk(socket, chunks_count, received_chunks) do
     {:ok, line} = :gen_tcp.recv(socket, 0)
     IO.puts "Received chunk: #{line}"
-    receive_chunk(socket, chunks_count - 1)
+    receive_chunk(socket, chunks_count - 1, [String.trim(line) | received_chunks])
   end
 
   def send(chunks, host, port) do
     options = [:binary, packet: :line, active: false]
     {:ok, socket} = :gen_tcp.connect(host, port, options)
 
+    IO.puts "Connected to #{host}@#{port}"
     send_chunk(socket, chunks)
   end
 
@@ -33,8 +41,8 @@ defmodule Client.FileTransfer do
   end
 
   defp send_chunk(socket, [chunk | chunks]) do
-    # TODO: remember to end the chunk message with \r\n
-    :ok = :gen_tcp.send(socket, chunk)
+    # TODO: remember to end the chunk message with \r\n... yeah... i forgot
+    :ok = :gen_tcp.send(socket, chunk <> "\r\n")
     send_chunk(socket, chunks)
   end
 end
