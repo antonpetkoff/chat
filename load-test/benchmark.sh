@@ -15,6 +15,8 @@ CLIENTS_COUNT=$1
 DURATION=$2
 COMMANDS="list\r\nsend_all broadcast message\r\n"
 
+mkdir -p logs/
+
 for i in $(seq 1 "${CLIENTS_COUNT}"); do
     USER_NAME=$(uuidgen)
     FIRST_MSG="user ${USER_NAME}\r\n"
@@ -22,9 +24,9 @@ for i in $(seq 1 "${CLIENTS_COUNT}"); do
     tcpkali "localhost:4040" \
         -e1 "${FIRST_MSG}" \
         -em "${COMMANDS}" \
-        -c 1 \
-        -r 1000 \
-        -T "${DURATION}" &> "benchmark_${i}_${USER_NAME}.log" &
+        --connections 1 \
+        --message-rate 1000 \
+        --duration "${DURATION}" &> "logs/benchmark_${i}_${USER_NAME}.log" &
 
     echo "${i}: ${USER_NAME} connected"
 done
