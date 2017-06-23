@@ -50,10 +50,10 @@ defmodule Client.API do
     IO.puts "#{chunks_count} chunks read"
     chunks = Enum.map(chunks, &Base.encode64/1)
 
-    {:ok, [socket_pair]} = Client.execute("send_file_to #{username} #{filename} #{chunks_count}\r\n")
+    {:ok, socket_pair} = Client.execute("send_file_to #{username} #{filename} #{chunks_count}\r\n")
     {host, port} = socket_pair_from_string socket_pair
     FileTransfer.send(chunks, host, port)
-    :ok
+    {:ok, "file #{filename} send successfully to #{username}"}
   end
 
   def handle(_, _) do
