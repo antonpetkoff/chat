@@ -26,7 +26,8 @@ defmodule Client.API do
 
   def handle({:receive_file, username, filename, chunks_count}, [server_socket: socket])
       when is_integer(chunks_count) do
-    IO.puts "receive file #{filename} from #{username} of size #{chunks_count}"
+    now = DateTime.utc_now |> DateTime.to_string
+    IO.puts "#{now}: receiving file #{filename} from #{username}..."
 
     self_pid = self()
     {:ok, _} = Task.Supervisor.start_child(:tasks_supervisor, fn ->
@@ -35,10 +36,7 @@ defmodule Client.API do
 
     socket_pair = receive do
       {:ok, tuple} -> socket_pair_to_string tuple
-      # TODO: what if an error occurs?
     end
-
-    IO.puts "receiver opened socket and is listening at #{socket_pair}"
 
     :gen_tcp.send(socket, "open_socket #{username} #{filename} #{socket_pair}\r\n")
     :ok
@@ -47,7 +45,6 @@ defmodule Client.API do
   def handle({:send_file, username, filename}, _) do
     chunks = read_chunks(filename, 512)
     chunks_count = Enum.count chunks
-    IO.puts "#{chunks_count} chunks read"
     chunks = Enum.map(chunks, &Base.encode64/1)
 
     {:ok, socket_pair} = Client.execute("send_file_to #{username} #{filename} #{chunks_count}\r\n")

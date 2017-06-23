@@ -7,7 +7,7 @@ defmodule Client.FileTransfer do
     send(caller_pid, socket_pair)
 
     {:ok, sender} = :gen_tcp.accept socket
-    # TODO: verify that the sender has connected
+    # TODO: verify that the sender has connected?
     receive_chunk(sender, chunks_count, [])
   end
 
@@ -17,22 +17,20 @@ defmodule Client.FileTransfer do
     |> Enum.map(&Base.decode64!/1)
     |> Enum.join
 
-    IO.puts "File received successfully:\n#{received_file}"
+    now = DateTime.utc_now |> DateTime.to_string
+    IO.puts "#{now}: file received successfully:\n#{received_file}"
 
     :ok = :gen_tcp.shutdown(socket, :read_write)
   end
 
   defp receive_chunk(socket, chunks_count, received_chunks) do
     {:ok, line} = :gen_tcp.recv(socket, 0)
-    IO.puts "Received chunk: #{line}"
     receive_chunk(socket, chunks_count - 1, [String.trim(line) | received_chunks])
   end
 
   def send(chunks, host, port) do
     options = [:binary, packet: :line, active: false]
     {:ok, socket} = :gen_tcp.connect(host, port, options)
-
-    IO.puts "Connected to #{host}@#{port}"
     send_chunk(socket, chunks)
   end
 
@@ -41,7 +39,6 @@ defmodule Client.FileTransfer do
   end
 
   defp send_chunk(socket, [chunk | chunks]) do
-    # TODO: remember to end the chunk message with \r\n... yeah... i forgot
     :ok = :gen_tcp.send(socket, chunk <> "\r\n")
     send_chunk(socket, chunks)
   end
