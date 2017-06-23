@@ -51,11 +51,11 @@ defmodule Server.Components.Connections do
   end
 
   def handle_call({:broadcast_message, message}, _from, sockets) do
-    # TODO: parallel enum with Task.Supervisor
     # TODO: exclude the sender from the broadcast receivers
     case sockets
     |> Map.values
-    |> Enum.map(&:gen_tcp.send(&1, message))
+    |> Enum.map(&Task.async(fn -> :gen_tcp.send(&1, message) end))
+    |> Enum.map(&Task.await/1)
     |> Enum.find(&match?({:error, _}, &1)) do
       nil -> {:reply, :ok, sockets}
       {:error, _} = error -> {:reply, error, sockets}

@@ -27,6 +27,13 @@ defmodule Client.API do
     :ok
   end
 
+  def handle({:broadcast, message}, _) do
+    Client.execute("send_all #{message}\r\n")
+    |> IO.inspect
+
+    :ok
+  end
+
   def handle({:receive_file, username, filename, chunks_count}, [server_socket: socket])
       when is_integer(chunks_count) do
     IO.puts "receive file #{filename} from #{username} of size #{chunks_count}"
