@@ -2,6 +2,8 @@ defmodule Client.API do
   alias Client.FileTransfer
 
   def handle({:message_from, message, username}, _) do
+    now = DateTime.utc_now |> DateTime.to_string
+    IO.puts "#{now}: message from #{username}: #{message}"
     # TODO: Store message in chat history
     :ok
   end
