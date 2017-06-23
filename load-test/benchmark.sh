@@ -24,8 +24,10 @@ for i in $(seq 1 "${CLIENTS_COUNT}"); do
     tcpkali "localhost:4040" \
         -e1 "${FIRST_MSG}" \
         -em "${COMMANDS}" \
+        --latency-marker \
+        --websocket \
         --connections 1 \
-        --message-rate 1000 \
+        --message-rate 10000 \
         --duration "${DURATION}" &> "logs/benchmark_${i}_${USER_NAME}.log" &
 
     echo "${i}: ${USER_NAME} connected"
