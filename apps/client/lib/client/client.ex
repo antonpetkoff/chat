@@ -1,5 +1,4 @@
 defmodule Client do
-  require Logger
   use GenServer
   alias Client.TCPMessage
   alias Client.API
@@ -13,10 +12,10 @@ defmodule Client do
     port = args[:port]
     options = [:binary, active: true, packet: :line]
 
-    Logger.info "Client connecting to #{host}@#{port}..."
+    IO.puts "Client connecting to #{host}@#{port}..."
     {:ok, server} = :gen_tcp.connect(host, port, options)
 
-    Logger.info "Client connected to #{host}@#{port}"
+    IO.puts "Client connected to #{host}@#{port}"
     {:ok, %{socket: server, from: nil}}
   end
 
@@ -28,8 +27,6 @@ defmodule Client do
   #TODO: always say "bye\r\n" to the server to close your session
 
   def handle_info({:tcp, socket, message}, %{socket: socket, from: from} = state) do
-    Logger.info "Received: #{message}"
-
     Task.Supervisor.start_child(:tasks_supervisor, fn ->
       handle_message(message, from, socket)
     end)
@@ -39,7 +36,6 @@ defmodule Client do
 
   def handle_call({:execute, command}, from, %{socket: socket} = state) do
     :ok = :gen_tcp.send(socket, command)
-    Logger.info "Sent: #{command}"
     # TODO: we could use a :queue to store "from" for each request (command)
     #       but the client is just a single process and "from" is always the same
     {:noreply, %{state | from: from}}

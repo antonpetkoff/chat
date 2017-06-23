@@ -14,8 +14,8 @@ defmodule Client.TCPMessage do
 
   # TODO: make sure this is a "list\r\n" response
   def do_parse("200", "ok", body) do
-    users = String.split(body, " ")
-    {:ok, {:response, users}}
+    # users = String.split(body, " ")
+    {:ok, {:response, body}}
   end
 
   def do_parse("501", "rcv_file", body) do

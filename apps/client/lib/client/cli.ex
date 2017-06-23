@@ -8,7 +8,7 @@ defmodule Client.CLI do
                        do: API.handle(command, []) # TODO: use another module
 
     case interaction do
-      :ok -> IO.puts "success"
+      {:ok, result} -> IO.puts "ok: #{result}"
       {:error, :invalid} -> IO.puts "invalid command"
       {:error, :not_implemented} -> IO.puts "not implemented"
     end

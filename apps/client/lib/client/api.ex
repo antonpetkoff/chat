@@ -10,30 +10,18 @@ defmodule Client.API do
 
   def handle({:register, username}, _) do
     Client.execute("user #{username}\r\n")
-    |> IO.inspect
-
-    :ok
   end
 
   def handle(:list, _) do
     Client.execute("list\r\n")
-    |> IO.inspect
-
-    :ok
   end
 
   def handle({:send_message, username, message}, _) do
     Client.execute("send_to #{username} #{message}\r\n")
-    |> IO.inspect
-
-    :ok
   end
 
   def handle({:broadcast, message}, _) do
     Client.execute("send_all #{message}\r\n")
-    |> IO.inspect
-
-    :ok
   end
 
   def handle({:receive_file, username, filename, chunks_count}, [server_socket: socket])
