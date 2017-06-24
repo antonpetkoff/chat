@@ -1,11 +1,13 @@
 defmodule Server.Application do
   use Application
 
+  @default_port 4040
+
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    # port = System.get_env("PORT") || raise "missing $PORT environment variable"
-    port = 4040
+    {port, _} = Application.get_env(:server, :port, @default_port)
+    |> Integer.parse
 
     children = [
       worker(Task, [Server, :accept, [port]]),

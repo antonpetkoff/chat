@@ -1,11 +1,16 @@
 defmodule Client.Application do
   use Application
 
+  @default_host 'localhost'
+  @default_port 4040
+
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    host = 'localhost'
-    port = 4040
+    host = Application.get_env(:client, :server_host, @default_host)
+    |> to_charlist
+    {port, _} = Application.get_env(:client, :server_port, @default_port)
+    |> Integer.parse
 
     children = [
       worker(Task, [Client.CLI, :interpret, []]),
