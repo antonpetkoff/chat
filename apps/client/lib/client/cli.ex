@@ -2,12 +2,17 @@ defmodule Client.CLI do
   alias Client.CLI.Parser
   alias Client.API
 
+  def notify(message) do
+    now = DateTime.utc_now |> DateTime.to_string
+    IO.puts "#{now}: #{message}"
+  end
+
   def start do
     register()
     interpret()
   end
 
-  def register do
+  defp register do
     username = IO.gets("enter your username |> ")
     case API.handle({:register, username}, []) do
       {:ok, result} -> IO.puts "ok: #{result}"
@@ -17,7 +22,7 @@ defmodule Client.CLI do
     end
   end
 
-  def interpret do
+  defp interpret do
     interaction = with input <- IO.gets("|> "),
                        {:ok, command} <- Parser.parse(input),
                        do: API.handle(command, [])

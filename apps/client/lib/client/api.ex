@@ -1,5 +1,6 @@
 defmodule Client.API do
   alias Client.FileTransfer
+  alias Client.CLI
 
   @chunk_size 512
 
@@ -32,14 +33,12 @@ defmodule Client.API do
 
   def handle({:receive_file, username, filename, chunks_count}, [server_socket: socket])
       when is_integer(chunks_count) do
-    now = DateTime.utc_now |> DateTime.to_string
-    IO.puts "#{now}: receiving file #{filename} from #{username}..."
+    CLI.notify("receiving file #{filename} from #{username}...")
 
     self_pid = self()
     {:ok, _} = Task.Supervisor.start_child(:tasks_supervisor, fn ->
       file = FileTransfer.receive(self_pid, chunks_count)
-      now = DateTime.utc_now |> DateTime.to_string
-      IO.puts "#{now}: file received successfully:\n#{file}"
+      CLI.notify("file received successfully:\n#{file}")
     end)
 
     socket_pair = receive do
@@ -58,7 +57,7 @@ defmodule Client.API do
     {host, port} = socket_pair_from_string socket_pair
 
     FileTransfer.send(chunks, host, port)
-    {:ok, "file #{filename} send successfully to #{username}"}
+    {:ok, "file #{filename} sent successfully to #{username}"}
   end
 
   def handle(_, _) do
