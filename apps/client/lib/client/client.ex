@@ -12,10 +12,10 @@ defmodule Client do
     port = args[:port]
     options = [:binary, active: true, packet: :line]
 
-    IO.puts "Client connecting to #{host}@#{port}..."
+    # IO.puts "Client connecting to #{host}@#{port}..."
     {:ok, server} = :gen_tcp.connect(host, port, options)
 
-    IO.puts "Client connected to #{host}@#{port}"
+    # IO.puts "Client connected to #{host}@#{port}"
     {:ok, %{socket: server, from: nil}}
   end
 

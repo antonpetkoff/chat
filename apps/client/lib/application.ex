@@ -13,7 +13,7 @@ defmodule Client.Application do
     |> Integer.parse
 
     children = [
-      worker(Task, [Client.CLI, :interpret, []]),
+      worker(Task, [Client.CLI, :start, []]),
       worker(Client, [[host: host, port: port]]),
       supervisor(Task.Supervisor, [[name: :tasks_supervisor]])
     ]
