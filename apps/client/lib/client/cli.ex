@@ -11,6 +11,7 @@ defmodule Client.CLI do
       {:ok, result} -> IO.puts "ok: #{result}"
       {:error, :invalid} -> IO.puts "invalid command"
       {:error, :not_implemented} -> IO.puts "not implemented"
+      {:error, reason} -> IO.puts "error: #{reason}"
     end
 
     interpret()

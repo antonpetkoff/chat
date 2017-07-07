@@ -45,6 +45,8 @@ defmodule Client do
     case TCPMessage.parse message do
       {:ok, {:response, response}} ->
         GenServer.reply(from, {:ok, response})
+      {:error, {:response, reason}} ->
+        GenServer.reply(from, {:error, reason})
       {:ok, {:message, action}} ->
         :ok = API.handle(action, [server_socket: socket])
       {:error, _} = error ->

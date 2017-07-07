@@ -7,15 +7,17 @@ defmodule Client.TCPMessage do
     do_parse(code, status, body)
   end
 
+  def do_parse("100", "err", reason) do
+    {:error, {:response, reason}}
+  end
+
+  def do_parse("200", "ok", body) do
+    {:ok, {:response, body}}
+  end
+
   def do_parse("300", "msg_from", body) do
     [username, message] = String.split(body, " ", parts: 2)
     {:ok, {:message, {:message_from, message, username}}}
-  end
-
-  # TODO: make sure this is a "list\r\n" response
-  def do_parse("200", "ok", body) do
-    # users = String.split(body, " ")
-    {:ok, {:response, body}}
   end
 
   def do_parse("501", "rcv_file", body) do

@@ -12,6 +12,10 @@ defmodule Client.API do
     Client.execute("user #{username}\r\n")
   end
 
+  def handle(:unregister, _) do
+    Client.execute("bye\r\n")
+  end
+
   def handle(:list, _) do
     Client.execute("list\r\n")
   end
