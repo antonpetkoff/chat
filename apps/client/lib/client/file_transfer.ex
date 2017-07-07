@@ -21,23 +21,18 @@ defmodule Client.FileTransfer do
 
     {:ok, sender} = :gen_tcp.accept socket
     # TODO: verify that the sender has connected?
-    receive_chunk(sender, chunks_count, [])
+
+    file = receive_file(sender, chunks_count)
+    :ok = :gen_tcp.shutdown(sender, :read_write)
+    file
   end
 
-  defp receive_chunk(socket, 0, received_chunks) do
-    received_file = received_chunks
-    |> Enum.reverse
-    |> Enum.map(&Base.decode64!/1)
+  defp receive_file(sender, chunks_count) do
+    Stream.repeatedly(fn ->
+      {:ok, line} = :gen_tcp.recv(sender, 0)
+      line |> String.trim |> Base.decode64!
+    end)
+    |> Enum.take(chunks_count)
     |> Enum.join
-
-    now = DateTime.utc_now |> DateTime.to_string
-    IO.puts "#{now}: file received successfully:\n#{received_file}"
-
-    :ok = :gen_tcp.shutdown(socket, :read_write)
-  end
-
-  defp receive_chunk(socket, chunks_count, received_chunks) do
-    {:ok, line} = :gen_tcp.recv(socket, 0)
-    receive_chunk(socket, chunks_count - 1, [String.trim(line) | received_chunks])
   end
 end

@@ -37,7 +37,9 @@ defmodule Client.API do
 
     self_pid = self()
     {:ok, _} = Task.Supervisor.start_child(:tasks_supervisor, fn ->
-      FileTransfer.receive(self_pid, chunks_count)
+      file = FileTransfer.receive(self_pid, chunks_count)
+      now = DateTime.utc_now |> DateTime.to_string
+      IO.puts "#{now}: file received successfully:\n#{file}"
     end)
 
     socket_pair = receive do
