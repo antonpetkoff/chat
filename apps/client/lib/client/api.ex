@@ -47,9 +47,11 @@ defmodule Client.API do
   end
 
   def handle({:send_file, username, filename}, _) do
-    chunks = read_chunks(filename, 512)
+    chunks = FileTransfer.encoded_chunks(filename, 512)
     chunks_count = Enum.count chunks
-    chunks = Enum.map(chunks, &Base.encode64/1)
+    chunks = chunks |> Enum.to_list
+
+    IO.puts "chunks count: #{chunks_count}"
 
     {:ok, socket_pair} = Client.execute("send_file_to #{username} #{filename} #{chunks_count}\r\n")
     {host, port} = socket_pair_from_string socket_pair
@@ -59,13 +61,6 @@ defmodule Client.API do
 
   def handle(_, _) do
     {:error, :not_implemented}
-  end
-
-  defp read_chunks(filename, chunk_size) do
-    {:ok, file} = File.open(filename, [:read])
-
-    Stream.repeatedly(fn -> IO.binread(file, chunk_size) end)
-    |> Enum.take_while(fn bytes -> not match?(:eof, bytes) end)
   end
 
   defp socket_pair_to_string({{a, b, c, d}, port}) when is_integer(port) do
