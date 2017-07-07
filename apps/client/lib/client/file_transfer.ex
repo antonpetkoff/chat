@@ -1,13 +1,15 @@
 defmodule Client.FileTransfer do
-  def encoded_chunks(filename, chunk_size) do
-    File.stream!(filename, [:read], chunk_size)
-    |> Stream.map(&Base.encode64/1)
-  end
-
   def send(chunks, host, port) do
     options = [:binary, packet: :line, active: false]
     {:ok, socket} = :gen_tcp.connect(host, port, options)
-    send_chunk(socket, chunks)
+
+    chunks
+    |> Stream.map(&Base.encode64/1)
+    |> Enum.map(fn chunk ->
+      :ok = :gen_tcp.send(socket, chunk <> "\r\n")
+    end)
+
+    :ok = :gen_tcp.shutdown(socket, :read_write)
   end
 
   def receive(caller_pid, chunks_count) do
@@ -37,15 +39,5 @@ defmodule Client.FileTransfer do
   defp receive_chunk(socket, chunks_count, received_chunks) do
     {:ok, line} = :gen_tcp.recv(socket, 0)
     receive_chunk(socket, chunks_count - 1, [String.trim(line) | received_chunks])
-  end
-
-
-  defp send_chunk(socket, []) do
-    :ok = :gen_tcp.shutdown(socket, :read_write)
-  end
-
-  defp send_chunk(socket, [chunk | chunks]) do
-    :ok = :gen_tcp.send(socket, chunk <> "\r\n")
-    send_chunk(socket, chunks)
   end
 end

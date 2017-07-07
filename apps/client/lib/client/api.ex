@@ -1,6 +1,8 @@
 defmodule Client.API do
   alias Client.FileTransfer
 
+  @chunk_size 512
+
   def handle({:message_from, message, username}, _) do
     now = DateTime.utc_now |> DateTime.to_string
     IO.puts "#{now}: message from #{username}: #{message}"
@@ -47,14 +49,12 @@ defmodule Client.API do
   end
 
   def handle({:send_file, username, filename}, _) do
-    chunks = FileTransfer.encoded_chunks(filename, 512)
+    chunks = File.stream!(filename, [:read], @chunk_size)
     chunks_count = Enum.count chunks
-    chunks = chunks |> Enum.to_list
-
-    IO.puts "chunks count: #{chunks_count}"
 
     {:ok, socket_pair} = Client.execute("send_file_to #{username} #{filename} #{chunks_count}\r\n")
     {host, port} = socket_pair_from_string socket_pair
+
     FileTransfer.send(chunks, host, port)
     {:ok, "file #{filename} send successfully to #{username}"}
   end
