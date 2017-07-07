@@ -3,8 +3,8 @@
 use Mix.Config
 
 config :client,
-  server_host: System.get_env("SERVER_HOST"),
-  server_port: System.get_env("SERVER_PORT")
+  server_host: System.get_env("SERVER_HOST") || "localhost",
+  server_port: System.get_env("SERVER_PORT") || "4040"
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

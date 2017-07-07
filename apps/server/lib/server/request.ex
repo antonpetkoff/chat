@@ -20,7 +20,7 @@ defmodule Server.Request do
     {:ok, {:send_file, "dummy_user", "file_name", 128}}
 
     iex> Server.Request.parse "buy_flowers dummy_user\r\n"
-    {:error, :unknown_command}
+    {:error, :bad_request}
   """
   def parse(line) do
     [directive | body] = line

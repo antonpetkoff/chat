@@ -3,7 +3,7 @@
 use Mix.Config
 
 config :server,
-  port: System.get_env("CHAT_PORT")
+  port: System.get_env("CHAT_PORT") || "4040"
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
