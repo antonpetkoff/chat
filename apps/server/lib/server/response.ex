@@ -62,6 +62,6 @@ defmodule Server.Response do
   end
 
   def message({:receive_file, username, filename, chunks_count}) do
-    "501 rcv_file #{username} #{filename} #{chunks_count}\r\n"
+    {:ok, "501 rcv_file #{username} #{filename} #{chunks_count}\r\n"}
   end
 end

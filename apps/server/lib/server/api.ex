@@ -14,9 +14,8 @@ defmodule Server.API do
     {:ok, {:register, "dummy_user"}}
   """
   def call({:register, username}, [from_socket: socket]) do
-    peername = :inet.peername socket
-
-    registration = with :ok <- Connections.link(peername, socket),
+    registration = with {:ok, peername} <- :inet.peername(socket),
+                        :ok <- Connections.link(peername, socket),
                         :ok <- Broker.put_online(peername, username),
                         do: Chats.register_user(username)
 
@@ -27,9 +26,8 @@ defmodule Server.API do
   end
 
   def call(:unregister, [from_socket: socket]) do
-    peername = :inet.peername socket
-
-    unregistration = with {:ok, username} <- Broker.get_username(peername),
+    unregistration = with {:ok, peername} <- :inet.peername(socket),
+                          {:ok, username} <- Broker.get_username(peername),
                           :ok <- Connections.unlink(peername),
                           :ok <- Broker.put_offline(peername),
                           :ok <- Chats.deregister_user(username),
@@ -42,29 +40,24 @@ defmodule Server.API do
   end
 
   def call({:send_message, to_username, message}, [from_socket: socket]) do
-    result = with {:ok, to_peername} <- Broker.get_peername(to_username),
-                  {:ok, from_username} <- socket
-                                          |> :inet.peername
-                                          |> Broker.get_username,
-                  do: Broker.send_message(from_username, to_peername, message)
+    sending = with {:ok, to_peername} <- Broker.get_peername(to_username),
+                   {:ok, from_peername} <- :inet.peername(socket),
+                   {:ok, from_username} <- Broker.get_username(from_peername),
+                   do: Broker.send_message(from_username, to_peername, message)
 
-    case result do
+    case sending do
       :ok -> {:ok, {:send_message, to_username}}
       {:error, _} -> {:error, {:send_message, to_username}}
     end
   end
 
   def call({:send_file, username, filename, chunks_count}, _) do
-    {:ok, to_peername} = Broker.get_peername username
+    {:ok, message} = Response.message({:receive_file, username, filename, chunks_count})
+    connect_peers = with {:ok, to_peername} <- Broker.get_peername(username),
+                         :ok <- Connections.send_message(message, to_peername),
+                         do: P2P.expect_socket(username, filename)
 
-    # TODO: is it better to use all components in this API
-    #       or is it better for components to use each other (more coupling)
-    #       and extract code from this API into the components?
-    # TODO: Response.message sounds bad, another module?
-    :ok = Response.message({:receive_file, username, filename, chunks_count})
-    |> Connections.send_message(to_peername)
-
-    case P2P.expect_socket(username, filename) do
+    case connect_peers do
       {:ok, socket_pair} -> {:ok, {:send_file, socket_pair}}
       {:error, _} -> {:error, :send_file}
     end
@@ -76,12 +69,11 @@ defmodule Server.API do
   end
 
   def call({:broadcast_message, message}, [from_socket: socket]) do
-    result = with {:ok, from_username} <- socket
-                                          |> :inet.peername # TODO: {:ok, pair} is returned
-                                          |> Broker.get_username,
-                  do: Broker.broadcast_message(from_username, message)
+    broadcast = with {:ok, peername} <- :inet.peername(socket),
+                     {:ok, from_username} <- Broker.get_username(peername),
+                     do: Broker.broadcast_message(from_username, message)
 
-    case result do
+    case broadcast do
       :ok -> {:ok, :broadcast_message}
       {:error, _} -> {:error, :broadcast_message}
     end
