@@ -6,12 +6,7 @@ defmodule Server.API do
   alias Server.Response
 
   @doc ~S"""
-  Serves the given `request`.
-
-  ## Examples
-
-    iex> Server.API.call {:register, "dummy_user"}, []
-    {:ok, {:register, "dummy_user"}}
+  Registers a user with the given user name.
   """
   def call({:register, username}, [from_socket: socket]) do
     registration = with {:ok, peername} <- :inet.peername(socket),
@@ -25,6 +20,9 @@ defmodule Server.API do
     end
   end
 
+  @doc ~S"""
+  Deregisters a user with the given user name.
+  """
   def call(:unregister, [from_socket: socket]) do
     unregistration = with {:ok, peername} <- :inet.peername(socket),
                           {:ok, username} <- Broker.get_username(peername),
