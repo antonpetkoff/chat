@@ -58,7 +58,7 @@ defmodule Server.Response do
   end
 
   def message(from_username, body) do
-    "300 msg_from #{from_username} #{body}\r\n"
+    {:ok, "300 msg_from #{from_username} #{body}\r\n"}
   end
 
   def message({:receive_file, username, filename, chunks_count}) do

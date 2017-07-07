@@ -84,9 +84,8 @@ defmodule Server.Components.Broker do
 
   defp do_send_message(from_username, message_body, send_fn, peers)
        when is_function(send_fn) do
-    case from_username
-    |> Response.message(message_body)
-    |> send_fn.() do
+    {:ok, message} = Response.message(from_username, message_body)
+    case send_fn.(message) do
       :ok -> {:reply, :ok, peers}
       {:error, _} = error -> {:reply, {:error, error}, peers}
     end
