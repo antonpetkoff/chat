@@ -1,10 +1,23 @@
 defmodule Server.Components.Connections do
+  @moduledoc """
+  Manages a set of peer connections. Each connection is represented by
+  a peername key and the peername's socket as value.
+  Peer connections can be added with `link` and removed with `unlink`.
+
+  This module can send/broadcast TCP messages to the linked peers.
+  A peer connection must be linked before you can send/broadcast message to it.
+  """
+
   use GenServer
 
   def start_link do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
+  @doc """
+  Adds a peer connection with key `peername` and value `socket`.
+  After this call succeeds, messages can be sent to this peer.
+  """
   def link(peername, socket) do
     GenServer.call(__MODULE__, {:link, peername, socket})
   end

@@ -5,7 +5,8 @@ defmodule Chat.Mixfile do
     [apps_path: "apps",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+     aliases: aliases()]
   end
 
   # Dependencies can be Hex packages:
@@ -22,5 +23,9 @@ defmodule Chat.Mixfile do
   # and cannot be accessed from applications inside the apps folder
   defp deps do
     []
+  end
+
+  def aliases do
+    [test: "test --no-start"]
   end
 end
