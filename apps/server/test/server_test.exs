@@ -63,6 +63,29 @@ defmodule ServerTest do
         "200 ok #{username2} successfully unregistered\r\n"
       list(client1, [username1])
     end
+
+    test "can register again after being unregistered", %{clients: [client1, client2 | _]} do
+      username1 = "a"
+      username2 = "b"
+      register(client1, username1)
+      register(client2, username2)
+      list(client1, [username1, username2])
+      assert send_and_recv(client2, "bye\r\n") ==
+        "200 ok #{username2} successfully unregistered\r\n"
+      list(client1, [username1])
+
+      register(client2, username2)
+      list(client1, [username1, username2])
+    end
+
+    test "cannot register with an already taken username", %{clients: [client1, client2 | _]} do
+      username = "a"
+      register(client1, username)
+      list(client1, [username])
+      assert send_and_recv(client2, "user #{username}\r\n") ==
+        "100 err #{username} already taken\r\n"
+      list(client1, [username])
+    end
   end
 
   describe "messages" do
