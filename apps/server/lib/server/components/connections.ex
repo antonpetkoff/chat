@@ -30,8 +30,8 @@ defmodule Server.Components.Connections do
     GenServer.call(__MODULE__, {:send_message, message, peername})
   end
 
-  def broadcast_message(message) do
-    GenServer.call(__MODULE__, {:broadcast_message, message})
+  def broadcast_message(message, from_peername) do
+    GenServer.call(__MODULE__, {:broadcast_message, message, from_peername})
   end
 
   def init(_) do
@@ -63,11 +63,12 @@ defmodule Server.Components.Connections do
     end
   end
 
-  def handle_call({:broadcast_message, message}, _from, sockets) do
-    # TODO: exclude the sender from the broadcast receivers
+  def handle_call({:broadcast_message, message, from_peername}, _from, sockets) do
     case sockets
-    |> Map.values
-    |> Enum.map(&Task.async(fn -> :gen_tcp.send(&1, message) end))
+    |> Enum.reject(&match?({^from_peername, _}, &1))
+    |> Enum.map(fn {_, socket} ->
+      Task.async(fn -> :gen_tcp.send(socket, message) end)
+    end)
     |> Enum.map(&Task.await/1)
     |> Enum.find(&match?({:error, _}, &1)) do
       nil -> {:reply, :ok, sockets}

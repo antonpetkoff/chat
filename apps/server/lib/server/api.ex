@@ -69,7 +69,7 @@ defmodule Server.API do
   def call({:broadcast_message, message}, [from_socket: socket]) do
     broadcast = with {:ok, peername} <- :inet.peername(socket),
                      {:ok, from_username} <- Broker.get_username(peername),
-                     do: Broker.broadcast_message(from_username, message)
+                     do: Broker.broadcast_message(from_username, peername, message)
 
     case broadcast do
       :ok -> {:ok, :broadcast_message}

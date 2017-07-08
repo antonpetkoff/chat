@@ -66,6 +66,24 @@ defmodule ServerTest do
         "200 ok message to #{username2} sent successfully\r\n"
       assert recv(client2) == "300 msg_from #{username1} #{message}\r\n"
     end
+
+    test "can be broadcast from one user to all other", %{clients: clients} do
+      usernames = 1..(length clients) |> Enum.map(&to_string/1)
+      with_usernames = clients |> Enum.zip(usernames)
+
+      Enum.map(with_usernames, fn {client, username} ->
+        register(client, username)
+      end)
+
+      [{sender_client, sender_name} | receivers] = with_usernames
+      message = "hello world"
+      assert send_and_recv(sender_client, "send_all #{message}\r\n") ==
+        "200 ok message sent successfully\r\n"
+
+      Enum.map(receivers, fn {client, _} ->
+        assert recv(client) == "300 msg_from #{sender_name} #{message}\r\n"
+      end)
+    end
   end
 
   describe "files" do

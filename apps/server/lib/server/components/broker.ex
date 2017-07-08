@@ -27,8 +27,8 @@ defmodule Server.Components.Broker do
     GenServer.call(__MODULE__, {:send_message, from_username, to_peername, message})
   end
 
-  def broadcast_message(from_username, message) do
-    GenServer.call(__MODULE__, {:broadcast_message, from_username, message})
+  def broadcast_message(from_username, from_peername, message) do
+    GenServer.call(__MODULE__, {:broadcast_message, from_username, from_peername, message})
   end
 
   def init(_) do
@@ -73,11 +73,11 @@ defmodule Server.Components.Broker do
     )
   end
 
-  def handle_call({:broadcast_message, from_username, message}, _from, peers) do
+  def handle_call({:broadcast_message, from_username, from_peername, message}, _from, peers) do
     do_send_message(
       from_username,
       message,
-      &Connections.broadcast_message(&1),
+      &Connections.broadcast_message(&1, from_peername),
       peers
     )
   end
