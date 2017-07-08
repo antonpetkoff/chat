@@ -17,4 +17,19 @@ defmodule Server.BrokerTest do
     assert :ok == Broker.put_online(peername, username)
     assert :ok == Broker.put_offline(peername)
   end
+
+  test "it cannot put a user online twice", %{peername: peername, username: username} do
+    assert :ok == Broker.put_online(peername, username)
+    assert {:error, :already_online} == Broker.put_online(peername, username)
+  end
+
+  test "it cannot put a user offline twice", %{peername: peername, username: username} do
+    assert :ok == Broker.put_online(peername, username)
+    assert :ok == Broker.put_offline(peername)
+    assert {:error, :already_offline} == Broker.put_offline(peername)
+  end
+
+  test "it cannot put an unregistered user offline", %{peername: peername, username: username} do
+    assert {:error, :already_offline} == Broker.put_offline(peername)
+  end
 end
