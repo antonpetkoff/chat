@@ -5,8 +5,7 @@ defmodule Client.API do
   @chunk_size 512
 
   def handle({:message_from, message, username}, _) do
-    now = DateTime.utc_now |> DateTime.to_string
-    IO.puts "#{now}: message from #{username}: #{message}"
+    CLI.notify("message from #{username}: #{message}")
     # TODO: Store message in chat history
     :ok
   end
