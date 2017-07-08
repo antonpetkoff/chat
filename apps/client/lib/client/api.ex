@@ -60,6 +60,18 @@ defmodule Client.API do
     {:ok, "file #{filename} sent successfully to #{username}"}
   end
 
+  def handle(:help, _) do
+    manual = """
+    commands:
+    send_to <user> <one_line_message>
+    send_all <one_line_message>
+    send_file_to <user> <filename>
+    list
+    bye
+    """
+    {:ok, manual}
+  end
+
   def handle(_, _) do
     {:error, :not_implemented}
   end

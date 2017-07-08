@@ -62,6 +62,10 @@ defmodule Client.CLI.Parser do
     {:ok, :unregister}
   end
 
+  def do_parse("help", []) do
+    {:ok, :help}
+  end
+
   def do_parse(_, _) do
     {:error, :invalid}
   end
