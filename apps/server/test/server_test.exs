@@ -52,6 +52,17 @@ defmodule ServerTest do
       register(client, username)
       list(client, [username])
     end
+
+    test "can unregister", %{clients: [client1, client2 | _]} do
+      username1 = "a"
+      username2 = "b"
+      register(client1, username1)
+      register(client2, username2)
+      list(client1, [username1, username2])
+      assert send_and_recv(client2, "bye\r\n") ==
+        "200 ok #{username2} successfully unregistered\r\n"
+      list(client1, [username1])
+    end
   end
 
   describe "messages" do
