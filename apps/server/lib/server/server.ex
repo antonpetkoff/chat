@@ -20,7 +20,6 @@ defmodule Server do
     {:ok, pid} = Task.Supervisor.start_child(Server.TaskSupervisor, fn ->
       handle_socket client
     end)
-    # :ok = :gen_tcp.controlling_process(client, pid) # handle {:error, :badarg}
     :gen_tcp.controlling_process(client, pid)
 
     loop_acceptor socket
