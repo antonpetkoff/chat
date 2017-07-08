@@ -1,6 +1,6 @@
 defmodule Server.Response do
   def create({:ok, {:register, user_name}}) do
-    {:ok, "200 ok #{user_name} successfully registerred\r\n"}
+    {:ok, "200 ok #{user_name} successfully registered\r\n"}
   end
 
   def create({:error, {:register, user_name, reason}}) do

@@ -25,7 +25,7 @@ defmodule ServerTest do
 
   defp register(client, username) do
     assert send_and_recv(client, "user #{username}\r\n") ==
-      "200 ok #{username} successfully registerred\r\n"
+      "200 ok #{username} successfully registered\r\n"
   end
 
   defp list(client, usernames) do
@@ -51,6 +51,14 @@ defmodule ServerTest do
       username = "a"
       register(client, username)
       list(client, [username])
+    end
+
+    test "can list registered users", %{clients: [client1, client2 | _]} do
+      username1 = "a"
+      username2 = "b"
+      register(client1, username1)
+      register(client2, username2)
+      list(client1, [username1, username2])
     end
 
     test "can unregister", %{clients: [client1, client2 | _]} do
@@ -118,9 +126,5 @@ defmodule ServerTest do
         assert recv(client) == "300 msg_from #{sender_name} #{message}\r\n"
       end)
     end
-  end
-
-  describe "files" do
-
   end
 end
