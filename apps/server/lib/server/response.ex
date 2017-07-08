@@ -11,7 +11,6 @@ defmodule Server.Response do
     {:ok, "200 ok #{user_name} successfully unregistered\r\n"}
   end
 
-  # TODO: pass the username?
   def create({:error, {:unregister, user_name, reason}}) do
     {:ok, "100 err #{user_name} #{reason}\r\n"}
   end

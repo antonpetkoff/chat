@@ -36,8 +36,8 @@ defmodule Client do
 
   def handle_call({:execute, command}, from, %{socket: socket} = state) do
     :ok = :gen_tcp.send(socket, command)
-    # TODO: we could use a :queue to store "from" for each request (command)
-    #       but the client is just a single process and "from" is always the same
+    # we could use a :queue to store "from" for each request (command)
+    # but the client is just a single process and "from" is always the same
     {:noreply, %{state | from: from}}
   end
 
