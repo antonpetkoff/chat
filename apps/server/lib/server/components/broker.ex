@@ -1,4 +1,10 @@
 defmodule Server.Components.Broker do
+  @moduledoc """
+  The Broker module knows the username and peername for all registered users.
+  It can register/deregister users and send/broadcast messages with the help
+  of the Connections component.
+  """
+
   use GenServer
   alias Server.Components.Connections
   alias Server.Response
@@ -7,26 +13,47 @@ defmodule Server.Components.Broker do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
+  @doc """
+  Registers that `peername` is online with `peername`.
+  """
   def put_online(peername, username) do
     GenServer.call(__MODULE__, {:put_online, peername, username})
   end
 
+  @doc """
+  Deregisters `peername`, thus putting him offline.
+  """
   def put_offline(peername) do
     GenServer.call(__MODULE__, {:put_offline, peername})
   end
 
+  @doc """
+  Gets the `username` for a registered `peername`.
+  """
   def get_username(peername) do
     GenServer.call(__MODULE__, {:get_username, peername})
   end
 
+  @doc """
+  Gets the `peername` for a registered `username`.
+  """
   def get_peername(username) do
     GenServer.call(__MODULE__, {:get_peername, username})
   end
 
+  @doc """
+  Sends `message` from a sender, identified by his username (`from_username`)
+  to a receiver, identified by his peername (`to_peername`).
+  """
   def send_message(from_username, to_peername, message) do
     GenServer.call(__MODULE__, {:send_message, from_username, to_peername, message})
   end
 
+  @doc """
+  Broadcasts `message` from a sender, identified by his username (`from_username`)
+  to all registered users.
+  `from_peername` is used to exclude the sender from all receivers.
+  """
   def broadcast_message(from_username, from_peername, message) do
     GenServer.call(__MODULE__, {:broadcast_message, from_username, from_peername, message})
   end
